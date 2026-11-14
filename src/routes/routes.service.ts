@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateRouteDto } from './dto/create-route.dto';
@@ -26,7 +26,27 @@ export class RoutesService implements OnModuleInit {
   }
 
   async create(createRouteDto: CreateRouteDto) {
-    const route = this.routeRepository.create(createRouteDto);
+    const origin = createRouteDto.origin.trim();
+    const destination = createRouteDto.destination.trim();
+
+    // Validar que no exista una ruta con el mismo origen y destino (sin importar mayúsculas/minúsculas)
+    const existingRoute = await this.routeRepository
+      .createQueryBuilder('route')
+      .where('LOWER(route.origin) = LOWER(:origin)', { origin })
+      .andWhere('LOWER(route.destination) = LOWER(:destination)', { destination })
+      .getOne();
+
+    if (existingRoute) {
+      throw new ConflictException(
+        `La ruta ${origin} - ${destination} ya existe en el catálogo`,
+      );
+    }
+
+    const route = this.routeRepository.create({
+      ...createRouteDto,
+      origin,
+      destination,
+    });
     return await this.routeRepository.save(route);
   }
 
