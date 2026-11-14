@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Trip } from '../../trips/entities/trip.entity';
 
 @Entity('routes')
 export class Route {
@@ -16,4 +17,7 @@ export class Route {
 
     @Column('boolean', { default: true })
     isActive: boolean;
+
+    @OneToMany(() => Trip, (trip) => trip.route)
+    trips: Trip[];
 }
