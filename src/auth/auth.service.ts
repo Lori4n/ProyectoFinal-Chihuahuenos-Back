@@ -27,7 +27,7 @@ export class AuthService implements OnModuleInit {
       const hashedPassword = await bcrypt.hash('123456', 10);
       await this.userRepository.save([
         {
-          fullName: 'ChihuaAdmin',
+          fullName: 'Administrador Chihuahueños',
           email: 'admin@chihuahuenos.com',
           password: hashedPassword,
           role: UserRole.ADMIN,
@@ -35,7 +35,7 @@ export class AuthService implements OnModuleInit {
         },
         {
           fullName: 'Cliente Prueba',
-          email: 'cliente@gmail.com',
+          email: 'cliente@chihuahuenos.com',
           password: hashedPassword,
           role: UserRole.CLIENT,
           isVerified: false,
@@ -58,7 +58,34 @@ export class AuthService implements OnModuleInit {
       fullName: registerUserDto.fullName.trim(),
       email,
       password: hashedPassword,
-      role: registerUserDto.role ?? UserRole.CLIENT,
+      role: UserRole.CLIENT,
+    });
+
+    const savedUser = await this.userRepository.save(user);
+    const { password, ...userWithoutPassword } = savedUser;
+
+    return {
+      user: userWithoutPassword,
+      token: this.jwtService.sign({ userId: savedUser.userId, role: savedUser.role }),
+    };
+  }
+
+  async registerAdmin(registerUserDto: RegisterUserDto) {
+    const email = registerUserDto.email.toLowerCase().trim();
+    const existing = await this.userRepository.findOneBy({ email });
+
+    if (existing) {
+      throw new ConflictException('Ya existe una cuenta registrada con ese correo');
+    }
+
+    const hashedPassword = await bcrypt.hash(registerUserDto.password, 10);
+
+    const user = this.userRepository.create({
+      fullName: registerUserDto.fullName.trim(),
+      email,
+      password: hashedPassword,
+      role: UserRole.ADMIN,
+      isVerified: true,
     });
 
     const savedUser = await this.userRepository.save(user);
