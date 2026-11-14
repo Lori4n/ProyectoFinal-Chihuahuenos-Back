@@ -1,7 +1,7 @@
-import { IsDateString, IsInt, IsNotEmpty, IsOptional, IsPositive, IsString, IsUUID } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsPositive, IsString, IsUUID } from 'class-validator';
 
 export class CreateTripDto {
-    @IsDateString()
+    @IsString()
     @IsNotEmpty()
     departureTime: string;
 
