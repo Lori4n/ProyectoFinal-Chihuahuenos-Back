@@ -9,6 +9,7 @@ import { AdminGuard } from './guards/admin.guard';
 
 @Module({
   imports: [
+    ConfigModule,
     TypeOrmModule.forFeature([User]),
     JwtModule.registerAsync({
       imports: [ConfigModule],

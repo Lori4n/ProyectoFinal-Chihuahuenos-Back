@@ -1,4 +1,16 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -27,5 +39,30 @@ export class AuthController {
   @Get('profile/:userId')
   getProfile(@Param('userId', ParseUUIDPipe) userId: string) {
     return this.authService.findOne(userId);
+  }
+
+  @Post('verify-identity/:userId')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      fileFilter: (_req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|webp|pdf)$/)) {
+          return cb(
+            new BadRequestException('Solo se permiten imágenes (JPG, PNG, WEBP) o archivos PDF'),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+      limits: { fileSize: 5 * 1024 * 1024 }, // Máximo 5 MB
+    }),
+  )
+  verifyIdentity(
+    @Param('userId', ParseUUIDPipe) userId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No se adjunto ningun archivo');
+    }
+    return this.authService.verifyIdentity(userId, file);
   }
 }

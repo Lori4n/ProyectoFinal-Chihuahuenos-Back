@@ -28,4 +28,7 @@ export class User {
 
     @Column('boolean', { default: false })
     isVerified: boolean;
+
+    @Column('text', { nullable: true })
+    idDocumentUrl: string | null;
 }
