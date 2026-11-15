@@ -1,8 +1,15 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Ticket, TicketStatus } from './entities/ticket.entity';
-import { PurchaseTicketsDto } from './dto/purchase-tickets.dto';
+import { PurchaseTicketDto } from './dto/purchase-tickets.dto';
+import { User } from '../auth/entities/user.entity';
 
 @Injectable()
 export class TicketsService {
@@ -18,40 +25,48 @@ export class TicketsService {
     });
   }
 
-  async purchaseTickets(purchaseTicketsDto: PurchaseTicketsDto) {
-    const { tripId, seatNumbers, passengerName } = purchaseTicketsDto;
+  async purchase(purchaseTicketDto: PurchaseTicketDto, user: User) {
+    if (!user.isVerified) {
+      throw new ForbiddenException(
+        'Debes verificar tu identidad antes de poder comprar boletos',
+      );
+    }
+
+    const uniqueSeats = [...new Set(purchaseTicketDto.seatNumbers)];
 
     const tickets = await this.ticketRepository.find({
       where: {
-        trip: { tripId },
-        seatNumber: In(seatNumbers),
+        trip: { tripId: purchaseTicketDto.tripId },
+        seatNumber: In(uniqueSeats),
       },
+      relations: { trip: true },
     });
 
-    if (tickets.length !== seatNumbers.length) {
-      throw new NotFoundException('Uno o más asientos seleccionados no existen en este viaje');
+    if (tickets.length !== uniqueSeats.length) {
+      throw new NotFoundException(
+        'Uno o más de los asientos seleccionados no existen en este viaje',
+      );
     }
 
-    // Valida que ninguno haya sido comprado ya por otro usuario
-    for (const ticket of tickets) {
-      if (ticket.status === TicketStatus.SOLD) {
-        throw new ConflictException(
-          `El asiento #${ticket.seatNumber} ya fue comprado por otro usuario :(`,
-        );
-      }
+    const soldTickets = tickets.filter((t) => t.status === TicketStatus.SOLD);
+    if (soldTickets.length > 0) {
+      const occupiedNumbers = soldTickets.map((t) => t.seatNumber).join(', ');
+      throw new ConflictException(
+        `Los siguientes asientos ya fueron vendidos: ${occupiedNumbers}`,
+      );
     }
 
-    // Marca los asientos como vendidos
+    const passengerName = purchaseTicketDto.passengerName?.trim() || user.fullName;
+    if (!passengerName) {
+      throw new BadRequestException('El nombre el comprador es obligatorio');
+    }
+
     for (const ticket of tickets) {
       ticket.status = TicketStatus.SOLD;
       ticket.passengerName = passengerName;
+      ticket.user = user;
     }
 
-    const purchased = await this.ticketRepository.save(tickets);
-
-    return {
-      message: 'Compra realizada con éxito!',
-      tickets: purchased,
-    };
+    return await this.ticketRepository.save(tickets);
   }
 }

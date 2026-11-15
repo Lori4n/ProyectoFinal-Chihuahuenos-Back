@@ -1,17 +1,26 @@
-import { ArrayMinSize, IsArray, IsInt, IsNotEmpty, IsString, IsUUID, Min } from 'class-validator';
+import {
+    ArrayMinSize,
+    IsArray,
+    IsInt,
+    IsNotEmpty,
+    IsOptional,
+    IsPositive,
+    IsString,
+    IsUUID,
+} from 'class-validator';
 
-export class PurchaseTicketsDto {
+export class PurchaseTicketDto {
     @IsUUID()
     @IsNotEmpty()
     tripId: string;
 
     @IsArray()
-    @ArrayMinSize(1)
+    @ArrayMinSize(1, { message: 'Debes seleccionar al menos un asiento' })
     @IsInt({ each: true })
-    @Min(1, { each: true })
+    @IsPositive({ each: true })
     seatNumbers: number[];
 
     @IsString()
-    @IsNotEmpty()
-    passengerName: string;
+    @IsOptional()
+    passengerName?: string;
 }

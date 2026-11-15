@@ -47,13 +47,13 @@ export class AuthController {
       fileFilter: (_req, file, cb) => {
         if (!file.mimetype.match(/\/(jpg|jpeg|png|webp|pdf)$/)) {
           return cb(
-            new BadRequestException('Solo se permiten imágenes (JPG, PNG, WEBP) o archivos PDF'),
+            new BadRequestException('Solo se permiten imágenes en formato (JPG, PNG, WEBP) o archivos PDF'),
             false,
           );
         }
         cb(null, true);
       },
-      limits: { fileSize: 5 * 1024 * 1024 }, // Máximo 5 MB
+      limits: { fileSize: 5 * 1024 * 1024 },
     }),
   )
   verifyIdentity(

@@ -1,5 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Trip } from '../../trips/entities/trip.entity';
+import { User } from '../../auth/entities/user.entity';
 
 export enum TicketStatus {
     AVAILABLE = 'AVAILABLE',
@@ -33,4 +34,8 @@ export class Ticket {
     @ManyToOne(() => Trip, (trip) => trip.tickets, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'tripId' })
     trip: Trip;
+
+    @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'userId' })
+    user: User | null;
 }

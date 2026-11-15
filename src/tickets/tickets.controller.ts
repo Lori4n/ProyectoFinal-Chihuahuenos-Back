@@ -1,6 +1,18 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import type { Request } from 'express';
 import { TicketsService } from './tickets.service';
-import { PurchaseTicketsDto } from './dto/purchase-tickets.dto';
+import { PurchaseTicketDto } from './dto/purchase-tickets.dto';
+import { VerifiedUserGuard } from '../auth/guards/verified-user.guard';
+import { User } from '../auth/entities/user.entity';
 
 @Controller('tickets')
 export class TicketsController {
@@ -12,7 +24,9 @@ export class TicketsController {
   }
 
   @Post('purchase')
-  purchaseTickets(@Body() purchaseTicketsDto: PurchaseTicketsDto) {
-    return this.ticketsService.purchaseTickets(purchaseTicketsDto);
+  @UseGuards(VerifiedUserGuard)
+  purchase(@Body() purchaseTicketDto: PurchaseTicketDto, @Req() req: Request) {
+    const user = (req as any).user as User;
+    return this.ticketsService.purchase(purchaseTicketDto, user);
   }
 }

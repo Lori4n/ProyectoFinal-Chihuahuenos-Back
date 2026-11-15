@@ -35,7 +35,7 @@ export class AdminGuard implements CanActivate {
             if (error instanceof ForbiddenException) {
                 throw error;
             }
-            throw new UnauthorizedException('Token inválido o expirado');
+            throw new UnauthorizedException('Sesión inválida o expirada');
         }
     }
 }

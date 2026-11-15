@@ -78,6 +78,6 @@ export class RoutesService implements OnModuleInit {
   async remove(id: string) {
     const route = await this.findOne(id);
     await this.routeRepository.remove(route);
-    return { message: `Ruta ${id} eliminada correctamente` };
+    return { message: `Ruta con ID ${id} eliminada correctamente` };
   }
 }

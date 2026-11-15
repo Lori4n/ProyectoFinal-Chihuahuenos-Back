@@ -70,7 +70,7 @@ export class AuthService implements OnModuleInit {
     const existing = await this.userRepository.findOneBy({ email });
 
     if (existing) {
-      throw new ConflictException('Ya existe una cuenta registrada con ese correo');
+      throw new ConflictException('Ya existe una cuenta registrada con este correo');
     }
 
     const hashedPassword = await bcrypt.hash(registerUserDto.password, 10);
@@ -96,7 +96,7 @@ export class AuthService implements OnModuleInit {
     const existing = await this.userRepository.findOneBy({ email });
 
     if (existing) {
-      throw new ConflictException('Ya existe una cuenta registrada con ese correo');
+      throw new ConflictException('Ya existe una cuenta registrada con este correo');
     }
 
     const hashedPassword = await bcrypt.hash(registerUserDto.password, 10);

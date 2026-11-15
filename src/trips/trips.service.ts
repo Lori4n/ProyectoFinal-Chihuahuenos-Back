@@ -102,6 +102,6 @@ export class TripsService {
   async remove(id: string) {
     const trip = await this.findOne(id);
     await this.tripRepository.remove(trip);
-    return { message: `Viaje ${id} eliminado correctamente` };
+    return { message: `Viaje con ID ${id} eliminado correctamente` };
   }
 }
