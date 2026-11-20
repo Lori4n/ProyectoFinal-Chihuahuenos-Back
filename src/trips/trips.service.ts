@@ -17,7 +17,6 @@ export class TripsService {
   ) { }
 
   async create(createTripDto: CreateTripDto) {
-    // 1. Verificar que el autobús no esté ya asignado a esa misma fecha/hora
     const existingTrip = await this.tripRepository.findOneBy({
       busNumber: createTripDto.busNumber,
       departureTime: createTripDto.departureTime,
@@ -29,7 +28,6 @@ export class TripsService {
       );
     }
 
-    // 2. Verificar que la ruta exista
     const route = await this.routeRepository.findOneBy({ routeId: createTripDto.routeId });
     if (!route) {
       throw new NotFoundException(`Ruta con ID ${createTripDto.routeId} no encontrada`);

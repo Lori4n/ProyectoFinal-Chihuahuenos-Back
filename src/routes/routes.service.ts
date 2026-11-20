@@ -29,7 +29,6 @@ export class RoutesService implements OnModuleInit {
     const origin = createRouteDto.origin.trim();
     const destination = createRouteDto.destination.trim();
 
-    // Validar que no exista una ruta con el mismo origen y destino (sin importar mayúsculas/minúsculas)
     const existingRoute = await this.routeRepository
       .createQueryBuilder('route')
       .where('LOWER(route.origin) = LOWER(:origin)', { origin })
